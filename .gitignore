@@ -8,3 +8,5 @@ build/
 .eggs/
 pip-wheel-metadata/
 sample1.mp3
+main.ipynb
+.env
