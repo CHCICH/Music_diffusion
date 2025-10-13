@@ -26,3 +26,5 @@ class Autoencoder(nn.Module):
         self.channel_decompostion_up = (16,32,64,128,256)
         self.reformulating_layer_factor = 4
 
+        
+
