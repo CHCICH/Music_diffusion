@@ -10,3 +10,6 @@ pip-wheel-metadata/
 sample1.mp3
 main.ipynb
 .env
+/Music_Gaussian
+/papers
+/reports
