@@ -9,6 +9,9 @@ import forward_noising as fn
 
 # Suppress warnings that might occur during librosa loading/processing
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(str(torch.device))
+
 T = 500
 BETAS = torch.linspace(0.0001, 0.02, T)
 ALPHAS = 1 - BETAS
