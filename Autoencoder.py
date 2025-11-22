@@ -25,6 +25,9 @@ class Autoencoder(nn.Module):
         super(Autoencoder, self).__init__()
         self.channel_decompostion_up = (16,32,64,128,256)
         self.reformulating_layer_factor = 4
-
-        
-
+        self.down = nn.ModuleList([Convolutional_Block(in_channel=self.channel_decompostion_up[i],
+                                                       out_channel=self.channel_decompostion_up[i]
+                                                       ,factor_scale=2,
+                                                       kernel_size=4,
+                                                       encode=True,
+                                                       isAdjust=False) for i in range(len(self.channel_decompostion_up) -1)])
