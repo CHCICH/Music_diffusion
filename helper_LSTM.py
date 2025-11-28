@@ -8,6 +8,9 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 import pretty_midi
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 def midi_to_pianoroll(path, fs=100, normalize=False):
     """
     Load a MIDI file and return a piano-roll numpy array and the time axis.
@@ -58,3 +61,29 @@ def DataToTrain(Notes,size_of_the_window):
     return final_data,final_target_data
 
 
+def train_model(model,DataLoader,epochs=20):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("---Starting Training Rn---") 
+    predictiveGenerativeModel = model
+    Loss = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(predictiveGenerativeModel.parameters(), lr=1e-3)
+    total_loss = 0
+    for epoch in range(epochs):
+        epoch_loss = 0
+        counter = 0
+        for inputs, target in DataLoader:
+            optimizer.zero_grad()
+            outputs = predictiveGenerativeModel(inputs)  
+            loss = Loss(outputs, target)                
+            loss.backward()
+            optimizer.step()
+            epoch_loss += loss.item()
+            counter += 1
+            if counter % 100 == 0:
+                print(epoch_loss, "at", counter)
+        avg_loss = epoch_loss / len(DataLoader)
+        total_loss += avg_loss
+        print(f"the average loss of the model for epoch {epoch} is {avg_loss}")
+    total_loss = total_loss/epoch
+
+    device = torch.device('cuda')

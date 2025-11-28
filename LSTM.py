@@ -8,12 +8,13 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 import pretty_midi
 from Model_LSTM import LSTMModel,LSTMDataset
-from helper_LSTM import DataToTrain,makeThemNotes,midi_to_pianoroll, normalize
+from helper_LSTM import DataToTrain,makeThemNotes,midi_to_pianoroll,train_model
+import matplotlib.pyplot as plt
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-piano_roll, times = midi_to_pianoroll('Bach_test.mid')
+piano_roll, times = midi_to_pianoroll('Bach_test.mid',fs=20)
 Notes = makeThemNotes(piano_roll)
 RawData_ready_to_train = DataToTrain(Notes,64)
 
@@ -34,40 +35,26 @@ print(DataSet_LSTM_BACH.data.shape)
 print(DataSet_LSTM_BACH.target.shape)
 print(torch.unique(DataSet_LSTM_BACH.target))
 
-predictiveGenerativeModel = LSTMModel(1, 6, 5, 129, device)
-Loss = nn.CrossEntropyLoss()
-optimizer = optim.Adam(predictiveGenerativeModel.parameters(), lr=1e-3)
-
+complexity = [i for i in range(2,10)]
+Loss_graph = []
 epochs = 20
-
-print("---Starting Training Rn---")
-for epoch in range(epochs):
-    epoch_loss = 0
-    counter = 0
-    for inputs, target in DataLoader_LSTM_BACH:
-        optimizer.zero_grad()
-        outputs = predictiveGenerativeModel(inputs)  
-        loss = Loss(outputs, target)                
-        loss.backward()
-        optimizer.step()
-        epoch_loss += loss.item()
-        counter += 1
-        if counter % 100 == 0:
-            print(epoch_loss, "at", counter)
-    avg_loss = epoch_loss / len(DataLoader_LSTM_BACH)
-    print(f"the average loss of the model for epoch {epoch} is {avg_loss}")
+hidden_layer = 5
+size_of_layer = 6
+model_used = LSTMModel(1, size_of_layer, hidden_layer, 129, device)
+train_model(model=model_used,DataLoader=DataLoader_LSTM_BACH, epochs=20)
 
 device = torch.device('cuda')
-predictiveGenerativeModel.eval()
+model_used.eval()
 
-seed = [80/128, 123/128, 122/128, 23/128, 122/128, 122/128] * 13
+seed = Compressed_data_train[0] + Compressed_data_train[1]
+print(seed)
 current = torch.tensor(seed[-64:], dtype=torch.float32).unsqueeze(-1).to(device)
 
 notes = []
 
 with torch.no_grad():
     for _ in range(200):
-        logits = predictiveGenerativeModel(current.unsqueeze(0))
+        logits = model_used(current.unsqueeze(0))
         probs = torch.softmax(logits, dim=-1)
         next_note_class = torch.multinomial(probs, num_samples=1).item()
         notes.append(next_note_class)
@@ -86,10 +73,11 @@ for i, n in enumerate(notes):
     ))
 
 midi.instruments.append(piano)
-midi.write('test5.mid')
+midi.write('test_fixed_seed_changed_fs_1000.mid')
 print(f"Saved {len(notes)} notes to test2.mid")
 
-
+plt.plot(complexity,Loss_graph)
+plt.show()
 
 
 
