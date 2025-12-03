@@ -87,3 +87,4 @@ def train_model(model,DataLoader,epochs=20):
     total_loss = total_loss/epoch
 
     device = torch.device('cuda')
+    return total_loss

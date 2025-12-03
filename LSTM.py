@@ -35,13 +35,17 @@ print(DataSet_LSTM_BACH.data.shape)
 print(DataSet_LSTM_BACH.target.shape)
 print(torch.unique(DataSet_LSTM_BACH.target))
 
-complexity = [i for i in range(2,10)]
+complexity = [i for i in range(6,30)]
 Loss_graph = []
 epochs = 20
 hidden_layer = 5
 size_of_layer = 6
-model_used = LSTMModel(1, size_of_layer, hidden_layer, 129, device)
-train_model(model=model_used,DataLoader=DataLoader_LSTM_BACH, epochs=20)
+
+for i in range(6,30):
+    model_used = LSTMModel(1, i, i, 129, device)
+    loss_current = train_model(model=model_used,DataLoader=DataLoader_LSTM_BACH, epochs=20)
+    Loss_graph.append(loss_current)
+
 
 device = torch.device('cuda')
 model_used.eval()
@@ -78,6 +82,4 @@ print(f"Saved {len(notes)} notes to test2.mid")
 
 plt.plot(complexity,Loss_graph)
 plt.show()
-
-
 
